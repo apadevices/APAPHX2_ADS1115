@@ -1,0 +1,142 @@
+#######################################
+# APAPHX2_ADS1115 — keyword definitions
+# Syntax: KEYWORD<TAB>KEYWORD_TOKENTYPE
+#######################################
+
+#######################################
+# Classes
+#######################################
+ADS1115_PHX	KEYWORD1
+ADS1115_PHX_PH	KEYWORD1
+ADS1115_PHX_RX	KEYWORD1
+
+#######################################
+# Methods — measurement
+#######################################
+begin	KEYWORD2
+readADC	KEYWORD2
+startReading	KEYWORD2
+updateReading	KEYWORD2
+cancelReading	KEYWORD2
+getLastReading	KEYWORD2
+getLastRawMV	KEYWORD2
+getState	KEYWORD2
+isReadingComplete	KEYWORD2
+
+#######################################
+# Methods — calibration
+#######################################
+calibratePHXReading	KEYWORD2
+calibratePoint1	KEYWORD2
+calibratePoint2	KEYWORD2
+calibratePHX	KEYWORD2
+saveCalibration	KEYWORD2
+loadCalibration	KEYWORD2
+isCalibrated	KEYWORD2
+getCalibration	KEYWORD2
+
+#######################################
+# Methods — temperature compensation
+#######################################
+enableTemperatureCompensation	KEYWORD2
+setTemperature	KEYWORD2
+getCurrentTemperature	KEYWORD2
+isTemperatureCompensationEnabled	KEYWORD2
+
+#######################################
+# Methods — rolling average
+#######################################
+setRollingAverage	KEYWORD2
+clearRollingAverage	KEYWORD2
+isRollingAverageReady	KEYWORD2
+
+#######################################
+# Methods — ADC configuration
+#######################################
+setGain	KEYWORD2
+setDataRate	KEYWORD2
+getGain	KEYWORD2
+getDataRate	KEYWORD2
+getVoltageRange	KEYWORD2
+
+#######################################
+# Methods — debug and callback
+#######################################
+enableDebug	KEYWORD2
+setDebugStream	KEYWORD2
+setMessageCallback	KEYWORD2
+
+#######################################
+# Methods — status
+#######################################
+getLastError	KEYWORD2
+getSensorType	KEYWORD2
+
+#######################################
+# Enums and structs
+#######################################
+PHXState	KEYWORD1
+PHXError	KEYWORD1
+PHXConfig	KEYWORD1
+PHX_Calibration	KEYWORD1
+SensorType	KEYWORD1
+MessageCallback	KEYWORD1
+
+#######################################
+# Constants — states
+#######################################
+IDLE	LITERAL1
+COLLECTING	LITERAL1
+PROCESSING	LITERAL1
+
+#######################################
+# Constants — errors
+#######################################
+NONE	LITERAL1
+PH_LOW	LITERAL1
+PH_HIGH	LITERAL1
+RX_LOW	LITERAL1
+RX_HIGH	LITERAL1
+TEMP_INVALID	LITERAL1
+CALIB_INVALID	LITERAL1
+
+#######################################
+# Constants — gain
+#######################################
+ADS1115_GAIN_TWOTHIRDS	LITERAL1
+ADS1115_GAIN_1	LITERAL1
+ADS1115_GAIN_2	LITERAL1
+ADS1115_GAIN_4	LITERAL1
+ADS1115_GAIN_8	LITERAL1
+ADS1115_GAIN_16	LITERAL1
+
+#######################################
+# Constants — data rate
+#######################################
+ADS1115_DR_8	LITERAL1
+ADS1115_DR_16	LITERAL1
+ADS1115_DR_32	LITERAL1
+ADS1115_DR_64	LITERAL1
+ADS1115_DR_128	LITERAL1
+ADS1115_DR_250	LITERAL1
+ADS1115_DR_475	LITERAL1
+ADS1115_DR_860	LITERAL1
+
+#######################################
+# Constants — I2C addresses
+#######################################
+ADS1115_ADDR_48	LITERAL1
+ADS1115_ADDR_49	LITERAL1
+ADS1115_ADDR_4A	LITERAL1
+ADS1115_ADDR_4B	LITERAL1
+
+#######################################
+# Constants — calibration
+#######################################
+ADS1115_CAL_SAMPLES	LITERAL1
+ADS1115_CAL_DELAY_MS	LITERAL1
+ADS1115_CAL_PAUSE_MS	LITERAL1
+ADS1115_CAL_SOAK_MS	LITERAL1
+ADS1115_CAL_TIMEOUT_MS	LITERAL1
+ADS1115_STABILITY_THRESHOLD	LITERAL1
+ADS1115_EEPROM_VERSION	LITERAL1
