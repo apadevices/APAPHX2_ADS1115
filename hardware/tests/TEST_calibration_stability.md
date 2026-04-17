@@ -90,11 +90,6 @@
   29   2.534   2.533  | 522.6   522.6
   30   2.533   2.533  | 522.6   522.5
 ------------------------------------------------------------
-```
-
-> **Note on pH reading vs buffer value:** The probe is sitting in pH 4.01 buffer but reads ~2.533 pH. This is expected and correct — the probe had been in RX solution immediately before this test and had not fully equilibrated to the buffer. Electrode equilibration in a new solution typically requires several minutes. The important result here is the *stability* of the reading, not the absolute value.
-
----
 
 ## Results Summary
 
