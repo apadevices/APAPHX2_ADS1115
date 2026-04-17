@@ -641,27 +641,3 @@ examples/
 MIT License — see [LICENSE](LICENSE) file.
 
 Copyright © 2025 APADevices [@kecup]
-
----
-
-## Poznámky pro vývojáře (CZ)
-
-Tato sekce je určena primárně pro interní potřebu APADevices.
-
-**Architektura knihovny:**  
-Základní třída `ADS1115_PHX` obsahuje veškerou logiku. Podtřídy `ADS1115_PHX_PH` a `ADS1115_PHX_RX` nastavují pouze výchozí zesílení a typ senzoru — žádná duplikace kódu.
-
-**Kalibrační proces:**  
-Funkce `calibratePHXReading()` provede povinný 200sekundový stabilizační čas (soak) a pak tříokenní kontrolu stability (okna A, B, C — každé ~890ms). Všechna tři okna musí souhlasit do 0.5mV. Časový limit je 360 sekund. Pokud probe nestabilizuje, vrátí nejlepší dostupný výsledek s chybou `CALIB_INVALID`.
-
-**Proč Gain 2 pro pH a Gain 1 pro ORP:**  
-ADS1115 měří diferenciálně (AIN0−AIN1), nikoli absolutně. Společný ofset 2.5V na obou vstupech se odečte. Signál pH elektrody je ±~500mV — vejde se do ±2.048V rozsahu Gain 2 s lepším rozlišením (62.5μV LSB). ORP elektroda ±2000mV do Gain 2 nevejde — vyžaduje Gain 1 (125μV LSB).
-
-**EEPROM:**  
-Verze byte 0xA2. pH na adrese 128, ORP na adrese 161. Každý sensor zabírá 17 bytů (1 verze + 16 bytů struct `PHX_Calibration`). `EEPROM.update()` — wear levelling, zapisuje jen změněné byty.
-
-**Zprávy callbacku:**  
-Všechny zprávy jsou ≤20 znaků pro kompatibilitu s LCD 20×4. Callback dostává `const __FlashStringHelper*` — nulová spotřeba SRAM pro řetězce.
-
-**Debug systém:**  
-`#define ADS1115_DEBUG` musí být v hlavičkovém souboru nebo v build flags. Makra jsou compile-time gated — bez define nulový overhead. Runtime `enableDebug()` přepíná jen pokud je define aktivní.
