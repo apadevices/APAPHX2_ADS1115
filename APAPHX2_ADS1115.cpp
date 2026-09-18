@@ -60,7 +60,8 @@ ADS1115_PHX::ADS1115_PHX(SensorType type,
       _temperature(25.0f),
       _debugEnabled(false),
       _debugStream(nullptr),
-      _messageCallback(nullptr)
+      _messageCallback(nullptr),
+      _tickCallback(nullptr)
 {
     // Fixed buffers zeroed by C runtime on AVR (global objects).
     // begin() performs explicit clear — no redundant memset here.
@@ -295,6 +296,14 @@ void ADS1115_PHX::setMessageCallback(MessageCallback callback) {
 
 void ADS1115_PHX::_notify(const __FlashStringHelper* msg) {
     if (_messageCallback) _messageCallback(msg);
+}
+
+void ADS1115_PHX::setTickCallback(TickCallback callback) {
+    _tickCallback = callback;
+}
+
+void ADS1115_PHX::_tick() {
+    if (_tickCallback) _tickCallback();
 }
 
 // ============================================================
@@ -567,6 +576,7 @@ float ADS1115_PHX::calibratePHXReading() {
 
     for (uint32_t s = 0; s < (ADS1115_CAL_SOAK_MS / 1000UL); s++) {
         delay(1000);
+        _tick();   // heartbeat hook — once per second, does not affect soak timing
         #if defined(ESP8266) || defined(ESP32)
         yield();
         #endif
@@ -589,6 +599,7 @@ float ADS1115_PHX::calibratePHXReading() {
     delay(ADS1115_CAL_PAUSE_MS);
 
     while ((millis() - loopStart) < ADS1115_CAL_TIMEOUT_MS) {
+        _tick();   // heartbeat hook — once per A/B/C round, does not affect stability logic
 
         // Window B
         startReading(calCfg);

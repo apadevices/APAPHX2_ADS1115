@@ -5,6 +5,33 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [1.2.0] — 2026-09-18
+
+### Added
+- `setTickCallback(TickCallback)` — registers a callback fired periodically during
+  `calibratePHXReading()`'s blocking waits: once per second during the mandatory
+  200-second soak, and once per round of the stability-check loop. Purely
+  additive — default is `nullptr` (no-op), so calibration timing, sample counts,
+  and the stability algorithm are byte-for-byte unchanged for any caller who
+  doesn't opt in. Intended for feeding an external hardware watchdog, or any
+  other lightweight periodic housekeeping that needs to happen during the
+  multi-minute wait that `setMessageCallback()`'s two milestone messages
+  (start of soak, stable/timeout) are too infrequent to support.
+  Real-world motivation: an external 555-timer watchdog circuit (no software
+  visibility into calibration's internal state) needs feeding roughly every
+  60-70 seconds or it resets the MCU — impossible without this hook, since the
+  soak's 200 seconds and the stability loop's up-to-360-second timeout both
+  fully block with no prior escape point. Verified on real Mega 2560 + PHX v2
+  hardware: LED-blink + Serial-dot test confirmed the tick fires as expected
+  throughout both phases, with calibration itself unaffected.
+
+### Verified
+- Full calibration run (both pH and ORP, both points, EEPROM save + reload)
+  confirmed unaffected on real hardware — same timing, same prompts, same
+  results as before this change, with the tick callback registered.
+
+---
+
 ## [1.1.2] — 2026-04-18
 
 ### Fixed

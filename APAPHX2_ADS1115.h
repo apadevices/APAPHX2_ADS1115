@@ -594,6 +594,31 @@ public:
     void setMessageCallback(MessageCallback callback);
 
     // ----------------------------------------------------------
+    // Tick callback — periodic heartbeat during blocking calibration waits
+    // ----------------------------------------------------------
+
+    /// Callback type for a periodic "still alive" tick during calibration waits.
+    /// Takes no arguments, returns nothing — a fire-and-forget heartbeat hook.
+    typedef void (*TickCallback)();
+
+    /**
+     * @brief Register a callback fired periodically during calibration's blocking waits
+     * If not set (default), the library behaves exactly as it did before this
+     * feature existed — this is purely additive, zero effect unless opted in.
+     * Called roughly once per second during the calibration soak, and once per
+     * stability-check round — frequent enough to feed an external watchdog or
+     * run other lightweight periodic housekeeping during the multi-minute wait.
+     * Does NOT change calibration timing, sample counts, or the stability
+     * algorithm in any way.
+     * @param callback Function pointer: void myTick()
+     *
+     * Example (feeding an external watchdog during calibration):
+     *   void wdtUpdate() { ... }
+     *   sensor.setTickCallback(wdtUpdate);
+     */
+    void setTickCallback(TickCallback callback);
+
+    // ----------------------------------------------------------
     // Debug system — runtime control
     // ----------------------------------------------------------
 
@@ -654,6 +679,9 @@ protected:
     // Message callback — output device abstraction
     MessageCallback _messageCallback = nullptr;
 
+    // Tick callback — heartbeat hook during blocking calibration waits
+    TickCallback _tickCallback = nullptr;
+
     // Debug
     bool        _debugEnabled   = false;
     Stream*     _debugStream    = nullptr;
@@ -667,6 +695,13 @@ protected:
      * No-op if setMessageCallback() was not called.
      */
     void     _notify(const __FlashStringHelper* msg);
+
+    /**
+     * @brief Fire the tick callback (if registered) — no-op otherwise
+     * Called only from inside calibratePHXReading()'s existing blocking waits
+     * (once per second during the soak, once per stability-check round).
+     */
+    void     _tick();
 
     /**
      * @brief Write 16-bit value to ADS1115 register

@@ -16,6 +16,7 @@ pH and ORP/RX measurement using the ADS1115 16-bit ADC with full isolation, two-
 - [API reference](#api-reference)
 - [Debug system](#debug-system)
 - [Message callback](#message-callback)
+- [Tick callback](#tick-callback)
 - [Platform notes](#platform-notes)
 - [Examples](#examples)
 - [Board quick spec](#board-quick-spec)
@@ -40,6 +41,7 @@ Both probes connect to isolated, precision analog frontends on the PHX v2 board.
 - Temperature compensation for pH (Pasco 2001 formula, normalised to 25°C)
 - Rolling average filter — configurable window 1–10 readings
 - Message callback — route library messages to Serial, LCD or any display
+- Tick callback — periodic heartbeat during calibration's blocking waits, for feeding an external watchdog or other periodic housekeeping
 - Compile-time + runtime debug system
 - Zero heap allocation after `begin()` — safe on AVR
 
@@ -524,6 +526,40 @@ phSensor.setMessageCallback(onMessage);
 
 ---
 
+## Tick callback
+
+**Added in 1.2.0.** `setMessageCallback()` only fires twice per calibration point (soak start, stable/timeout) — far too infrequent to feed an external watchdog during the 200-second soak or the up-to-360-second stability loop, both of which are otherwise fully blocking with no callback in between. `setTickCallback()` fills that gap: it fires roughly once per second during the soak, and once per round of the stability loop.
+
+**Purely additive — does not change calibration timing, sample counts, or the stability algorithm in any way.** Default is `nullptr` (no-op), so any code that doesn't call `setTickCallback()` behaves exactly as it did before this feature existed.
+
+### Motivating use case: external hardware watchdog
+
+Some designs use an external watchdog circuit (e.g. a 555-timer astable reset circuit) instead of the MCU's internal `wdt.h`, because the internal watchdog only protects against firmware hangs, not full system lockups. These circuits have no visibility into what the MCU is doing — they just expect a periodic "still alive" pulse on a GPIO pin, or they reset the board. Before 1.2.0, running calibration with such a watchdog wired up would reset the MCU mid-calibration, since nothing fed the watchdog during the multi-minute blocking wait.
+
+```cpp
+const uint8_t WDT_HB_PIN = 38;
+
+void wdtUpdate() {
+    // non-blocking heartbeat pulse — see your own watchdog integration
+    // for the actual pulse logic; this is just registered as the tick
+}
+
+void setup() {
+    phSensor.begin();
+    phSensor.setTickCallback(wdtUpdate);
+    rxSensor.setTickCallback(wdtUpdate);
+    // ... calibration proceeds as normal, watchdog stays fed throughout
+}
+```
+
+### Important notes
+
+- The tick callback takes no arguments and returns nothing — it's a pure "still alive" signal, not a data channel.
+- Called only from inside `calibratePHXReading()`'s existing blocking waits (via `calibratePoint1()`/`calibratePoint2()`) — never during normal non-blocking `startReading()`/`updateReading()` operation, since that path never blocks in the first place.
+- Independent of `setMessageCallback()` — register one, both, or neither.
+
+---
+
 ## Platform notes
 
 ### AVR (Arduino Uno, Nano, Mega)
@@ -588,6 +624,7 @@ rxSensor.begin(false);
 | 07 | `DebugOutput` | Advanced | Debug system, `setDebugStream()`, runtime toggle |
 | 08 | `LCDDisplay` | Advanced | `setMessageCallback()` with LCD 20×4 |
 | 09 | `PoolMonitor` | Advanced | Complete pool automation sketch |
+| 10 | `TickCallback` | Advanced | `setTickCallback()` heartbeat during calibration's blocking waits |
 
 All examples are in the `examples/` folder, organised by class:
 ```
@@ -604,6 +641,7 @@ examples/
     07_DebugOutput/
     08_LCDDisplay/
     09_PoolMonitor/
+    10_TickCallback/
 ```
 
 ---
